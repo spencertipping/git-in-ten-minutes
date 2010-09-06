@@ -378,7 +378,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.Nrk9/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.5NcC/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1477,70 +1477,46 @@ meta::section('branches', <<'__103c984de1e65b90720e23b8e846153c');
   updates {\tt master} each time you make a new commit. It's appropriate to think of {\tt master} as a symlink that Git keeps pointing at the most recent commit.
 __103c984de1e65b90720e23b8e846153c
 
-meta::section('commits', <<'__9e1a3e074cb2fa931f8fb680b0a1130f');
+meta::section('commits', <<'__cf0c6cfec475ee069d1d88c98cb711a0');
 - s1 Commits | sec:commits
-  As soon as you hand your files over to Git, Git keeps copies. You can nuke your working tree, edit it arbitrarily, and unless you tell Git to absorb those changes using {\tt git commit},
-  Git really doesn't care. This is probably the most misunderstood thing about Git, at least at first. But once you wrap your mind around it things start to make sense. So, for example, here's
-  a Git session along with how it sees the world.
+  
+__cf0c6cfec475ee069d1d88c98cb711a0
 
-  - s2 How Git sees your files | sec:commits-how-git-sees-files
-    - verbatim << end
-      $ git init
-    - end
-    {\bf Git:} Ok, I've created a directory called {\tt .git} where I'll store mysteriously-compressed versions of all of the files you give me. You can then bork anything else, and I'll be
-    able to reconstruct any file you've given me from the stuff in {\tt .git}.
+meta::section('index', <<'__40ec25a8c470dd5ee01e65b773143bbd');
+- s1 The Index | sec:the-index
+  If you're new to Git you'll have to get used to the index. In most version control systems such as CVS or Subversion, a checkin or commit looks like this:
 
-    - verbatim << end
-      $ echo 'test' > foo
-    - end
-    {\bf Git:} You've created a file called {\tt foo} that I know nothing about and I won't touch with a ten-foot pole.
+  - quotation << end
+    \noindent\verb|working directory| $\rightarrow$ \verb|commit|
+  - end
 
-    - verbatim << end
-      $ git add foo
-    - end
-    {\bf Git:} Aha, so you {\em do} want me to manage {\tt foo}. Well certainly. I've taken a snapshot of {\tt foo} and placed it into the {\em index}, which is a place where you can put
-    snapshots of things as you're getting ready to commit them. If you edit {\tt foo} from here, I won't see those changes unless you do another {\tt git add}.
+  \noindent Git adds the index as a ``commit-building area''. This means that you have a lot of fine-grained control over what you will be committing.\footnote{See, for example, the {\tt -p}
+  option of {\tt git-add} -- one of the hidden gems of Git's index system.} The index also represents what Git thinks the working directory should look like, and that can be important. When
+  you run {\tt git diff}, for example, you're diffing against the index. A common workflow pattern might be something like this:
 
-    - verbatim << end
-      $ git commit
-    - end
-    {\bf Git:} Ok, I'm going to make a commit out of everything in the index. In this case, you've handed me a new file, so I'll commit the fact that you created {\tt foo} and that its
-    contents were {\tt test} when it was added to the index. (For all I know, it might be something else now; but you wanted me to commit the snapshots in the index, so that's all I did.)
+  - enumerate << end
+    - item Make some changes
+    - item Test those changes (tests pass in this case)
+    - item {\tt git add} the file
+    - item Make some more changes
+    - item Test those changes (tests fail in this case)
+    - item {\tt git diff} the file
+    - item Manually revert some changes
+    - item Alternatively, {\tt git checkout} the file -- at this point, the file is back to the last point when you {\tt git add}ed it
+    - item Make more changes
+    - item etc.
+  - end
 
-    - verbatim << end
-      $ echo 'test2' > foo
-    - end
-    {\bf Git:} You've made changes to {\tt foo}. I don't own any of those changes, though, since you haven't made a new snapshot. As far as I'm concerned, {\tt foo} is supposed to contain
-    {\tt test}. If you want me to create another snapshot and absorb those changes, you'll have to use {\tt git add}.\footnote{There is an exception, really a shorthand: {\tt git commit -a},
-    which I'll go over later.}
+  So making a commit in Git actually looks more like this:
 
-    - verbatim << end
-      $ git diff foo
-    - end
-    {\bf Git:} You're asking me how {\tt foo} is different from the way I was expecting it. Equivalently, how {\tt foo} will change if you use {\tt git add}. I'll print a diff to show what
-    has changed between your copy of {\tt foo} and the last current {\tt foo} that you've given me.
+  \noindent\verb|file| $\rightarrow$ \verb|index| \\
+  (repeat above for other files or pieces of files) \\
+  \verb|index| $\rightarrow$ \verb|commit|
 
-    - verbatim << end
-      $ git add foo
-    - end
-    {\bf Git:} Ok, I've taken {\tt foo}'s current contents and put them in the index. If you run {\tt git commit}, I'll create a commit out of that change.
+  The most important thing to realize is that {\bf Git always commits from the index}.
+__40ec25a8c470dd5ee01e65b773143bbd
 
-  - s2 Common shortcuts | sec:commits-common-shortcuts
-    Git provides some shortcuts to access the most commonly-used functionality:
-
-    - verbatim << end
-      $ git commit <filename> [<filename> ... <filename>]
-    - end
-    {\bf Git:} I'll take a new snapshot of each of those files (provided that I own it; you must have {\tt git add}ed it at least once for me to be willing to touch it) and create a commit
-    from those snapshots. After this, any other snapshots in the index will still be uncommitted, but all changes that you've made to the files you just specified will be committed.
-
-    - verbatim << end
-      $ git commit -a
-    - end
-    {\bf Git:} I'll commit any changes to every single file you've ever {\tt git add}ed, along with anything you've put into the index.
-__9e1a3e074cb2fa931f8fb680b0a1130f
-
-meta::section('main', <<'__efbcd278a0c2365cd1da11e7742f6bef');
+meta::section('main', <<'__2f5865d88bbe93b361fd9d37ed8a376c');
 - documentclass article
 - include resource::header
 
@@ -1551,10 +1527,11 @@ meta::section('main', <<'__efbcd278a0c2365cd1da11e7742f6bef');
   - maketitle
   - tableofcontents
 
+  - include section::index
   - include section::commits
   - include section::branches
 - end
-__efbcd278a0c2365cd1da11e7742f6bef
+__2f5865d88bbe93b361fd9d37ed8a376c
 
 meta::template('comment', "'';     # A mechanism for line or block comments.");
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
