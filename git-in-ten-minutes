@@ -379,7 +379,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.5NcC/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.V6le/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1469,23 +1469,13 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\newcommand{\Ref}[2]{\hyperref[#2]{#1 \ref*{#2}}}');
 meta::resource('header-resource', '\lstnewenvironment{resourcecode}{}{}');
-meta::section('branches', <<'__103c984de1e65b90720e23b8e846153c');
-- s1 Branches | sec:branches
-  Before I go into branches there's something you should know about commits. Each commit represents changes to a file (or many files), and changes only make sense if you know what the file
-  looks like. So if you make two commits, first commit {\tt A} and then commit {\tt B}, then commit {\tt B} knows that it depends on commit {\tt A}.\footnote{In practice, the commit names {\tt
-  A} and {\tt B} are very long hexadecimal numbers computed from the diffs represented by the commits, and Git can look up the data in the commits based on these numbers.} You can see, then,
-  that the most recent commit has a chain all the way back to the beginning of your repository.
-
-  But all of this raises a question: How does Git keep track of the most recent commit? The answer is that it uses a label. When you create a repository, that label is {\tt master}; and Git
-  updates {\tt master} each time you make a new commit. It's appropriate to think of {\tt master} as a symlink that Git keeps pointing at the most recent commit.
-__103c984de1e65b90720e23b8e846153c
-
-meta::section('commits', <<'__cf0c6cfec475ee069d1d88c98cb711a0');
+meta::section('commits', <<'__e9de3328bf2a04fdcdf5766b3c1be2bb');
 - s1 Commits | sec:commits
-  
-__cf0c6cfec475ee069d1d88c98cb711a0
+  A commit in Git is two things. It is a diff representing a change, and it is a snapshot of the world after the change. Both roles are possible because each commit stores the ID of the
+  preceding commit.\footnote{Commits with more than one preceding commits are merges; in this case, the merging commit specifies the state of each file once the merge is complete.}
+__e9de3328bf2a04fdcdf5766b3c1be2bb
 
-meta::section('index', <<'__40ec25a8c470dd5ee01e65b773143bbd');
+meta::section('index', <<'__9987668565d15a9aa43a589658c87ef3');
 - s1 The Index | sec:the-index
   If you're new to Git you'll have to get used to the index. In most version control systems such as CVS or Subversion, a checkin or commit looks like this:
 
@@ -1512,14 +1502,15 @@ meta::section('index', <<'__40ec25a8c470dd5ee01e65b773143bbd');
 
   So making a commit in Git actually looks more like this:
 
-  \noindent\verb|file| $\rightarrow$ \verb|index| \\
-  (repeat above for other files or pieces of files) \\
-  \verb|index| $\rightarrow$ \verb|commit|
+  - quotation << end
+    \noindent(\verb|file| $\rightarrow$ \verb|index|)* \\
+    \verb|index| $\rightarrow$ \verb|commit|
+  - end
 
   The most important thing to realize is that {\bf Git always commits from the index}.
-__40ec25a8c470dd5ee01e65b773143bbd
+__9987668565d15a9aa43a589658c87ef3
 
-meta::section('main', <<'__2f5865d88bbe93b361fd9d37ed8a376c');
+meta::section('main', <<'__0b5773581843fe1c7f97d3f8dff18c4e');
 - documentclass article
 - include resource::header
 
@@ -1532,10 +1523,11 @@ meta::section('main', <<'__2f5865d88bbe93b361fd9d37ed8a376c');
 
   - include section::index
   - include section::commits
-  - include section::branches
+  - include section::remotes
 - end
-__2f5865d88bbe93b361fd9d37ed8a376c
+__0b5773581843fe1c7f97d3f8dff18c4e
 
+meta::section('remotes', '- s1 Remotes | sec:remotes');
 meta::template('comment', "'';     # A mechanism for line or block comments.");
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
 my $result = eval $_[0];
@@ -1556,7 +1548,7 @@ return '' if template::failing_conditional($commands);
 join "\n", map retrieve($_), split /\s+/, $commands;
 __e0624844a65ae41e0217dd871fc0dbfb
 
-meta::template('item[]', '"\\item[$_[0]]";');
+meta::template('item[]', '"\item[$_[0]]";');
 meta::vim_highlighter('cltex', <<'__5bfc80e1a2ad3bb7cb4f57ff906d71b0');
 " Cleaner TeX
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
