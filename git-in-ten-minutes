@@ -379,7 +379,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.V6le/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.wJzG/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1469,48 +1469,61 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\newcommand{\Ref}[2]{\hyperref[#2]{#1 \ref*{#2}}}');
 meta::resource('header-resource', '\lstnewenvironment{resourcecode}{}{}');
-meta::section('commits', <<'__e9de3328bf2a04fdcdf5766b3c1be2bb');
-- s1 Commits | sec:commits
-  A commit in Git is two things. It is a diff representing a change, and it is a snapshot of the world after the change. Both roles are possible because each commit stores the ID of the
-  preceding commit.\footnote{Commits with more than one preceding commits are merges; in this case, the merging commit specifies the state of each file once the merge is complete.}
-__e9de3328bf2a04fdcdf5766b3c1be2bb
+meta::section('leveraging-the-index', <<'__b873d6a71afde924b78e0ff4a52248fe');
+- s1 Leveraging the Index | sec:leveraging-the-index
+  Git's index is a feature, not a bug. It's one of Git's best features because it gives you both sub-commit checkpointing and very fine-grained control over commits. For example, let's suppose
+  you have a file called {\tt foo.rb} that you're refactoring. Here's life without the index:
 
-meta::section('index', <<'__9987668565d15a9aa43a589658c87ef3');
-- s1 The Index | sec:the-index
-  If you're new to Git you'll have to get used to the index. In most version control systems such as CVS or Subversion, a checkin or commit looks like this:
-
-  - quotation << end
-    \noindent\verb|working directory| $\rightarrow$ \verb|commit|
+  - verbatim << end
+    $ rake test
+    All tests pass
+    $ vim foo.rb
+    Refactor one piece of foo.rb
+    $ rake test
+    3 failures -- can't commit that
+    $ cp foo.rb foo-one-piece-done.rb
+    $ vim foo.rb
+    Refactor the other piece of foo.rb
+    $ rake test
+    5 failures -- darn, that didn't work
+    $ diff foo.rb foo-one-piece-done.rb
+    Look over the diff to figure out what broke the tests
+    $ vim foo.rb
+    Try again on the refactor
+    $ rake test
+    All tests pass
+    $ rm foo-one-piece-done.rb
+    $ commit
   - end
 
-  \noindent Git adds the index as a ``commit-building area''. This means that you have a lot of fine-grained control over what you will be committing.\footnote{See, for example, the {\tt -p}
-  option of {\tt git-add} -- one of the hidden gems of Git's index system.} The index also represents what Git thinks the working directory should look like, and that can be important. When
-  you run {\tt git diff}, for example, you're diffing against the index. A common workflow pattern might be something like this:
+  The index can replace the temporary file, though:
 
-  - enumerate << end
-    - item Make some changes
-    - item Test those changes (tests pass in this case)
-    - item {\tt git add} the file
-    - item Make some more changes
-    - item Test those changes (tests fail in this case)
-    - item {\tt git diff} the file
-    - item Manually revert some changes
-    - item Alternatively, {\tt git checkout} the file -- at this point, the file is back to the last point when you {\tt git add}ed it
-    - item Make more changes
-    - item etc.
+  - verbatim << end
+    $ rake test
+    All tests pass
+    $ vim foo.rb
+    Refactor one piece
+    $ rake test
+    3 failures -- can't commit
+    $ git add foo.rb
+    $ vim foo.rb
+    Refactor the other piece
+    $ rake test
+    5 failures
+    $ git diff foo.rb
+    Gives diff from the last git add command
+    $ vim foo.rb
+    Try again
+    $ rake test
+    All tests pass
+    $ git commit foo.rb
+    Updates the index and commits that
   - end
 
-  So making a commit in Git actually looks more like this:
+  
+__b873d6a71afde924b78e0ff4a52248fe
 
-  - quotation << end
-    \noindent(\verb|file| $\rightarrow$ \verb|index|)* \\
-    \verb|index| $\rightarrow$ \verb|commit|
-  - end
-
-  The most important thing to realize is that {\bf Git always commits from the index}.
-__9987668565d15a9aa43a589658c87ef3
-
-meta::section('main', <<'__0b5773581843fe1c7f97d3f8dff18c4e');
+meta::section('main', <<'__187553c4e274161c21e60cd789d7db7d');
 - documentclass article
 - include resource::header
 
@@ -1521,13 +1534,10 @@ meta::section('main', <<'__0b5773581843fe1c7f97d3f8dff18c4e');
   - maketitle
   - tableofcontents
 
-  - include section::index
-  - include section::commits
-  - include section::remotes
+  - include section::leveraging-the-index
 - end
-__0b5773581843fe1c7f97d3f8dff18c4e
+__187553c4e274161c21e60cd789d7db7d
 
-meta::section('remotes', '- s1 Remotes | sec:remotes');
 meta::template('comment', "'';     # A mechanism for line or block comments.");
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
 my $result = eval $_[0];
