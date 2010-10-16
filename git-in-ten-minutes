@@ -379,7 +379,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.XXZH/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.lcTn/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1470,7 +1470,7 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\\newcommand{\\Ref}[2]{\\hyperref[#2]{#1 \\ref*{#2}}}');
 meta::resource('header-resource', '\\lstnewenvironment{resourcecode}{}{}');
-meta::section('branching', <<'__bbf99b724b2df6579dddb75fec2e6c1a');
+meta::section('branching', <<'__8d7b29ede9357e595e9770903a268c92');
 - s1 Branching | sec:branching
   Let's suppose you've got a repo with a few commits on it, so that the history is entirely linear:
 
@@ -1528,9 +1528,20 @@ meta::section('branching', <<'__bbf99b724b2df6579dddb75fec2e6c1a');
     - end
 
     You can run \verb|git checkout <commit D's ID>| to get back to where you were before the rebase, and run \verb|git checkout master| to return.\footnote{This is one reason it's a good idea
-    to create a tag of {\tt HEAD} before rebasing, and why you shouldn't rebase over commits that you've pushed to other people.} Now before you go and assume that rebasing is safe, it isn't
-    exactly -- if you were to run a {\tt git gc} without either a branch or a tag on commit D, then commits C and D would get deleted.
-__bbf99b724b2df6579dddb75fec2e6c1a
+    to create a tag of {\tt HEAD} before rebasing, and why you shouldn't rebase over commits that you've pushed to other people.}
+    
+    - s3 Errata
+      The previous version of this guide contained the following untrue statement:
+
+      - quote << end
+        ``Now before you go and assume that rebasing is safe, it isn't exactly -- if you were to run a {\tt git gc} without either a branch or a tag on commit D, then commits C and D would get
+          deleted.''
+      - end
+      
+      Thanks to Daniel Brockman (@dbrock) for pointing out that this is in fact not the case; commits with no named references can be kept around because they appear in the reflog (viewable
+      with the {\tt git reflog} command). I actually had no idea that such a thing existed, but it looks very useful. It's basically a record of every change to {\tt HEAD}, which makes it easy
+      to undo nearly any operation.
+__8d7b29ede9357e595e9770903a268c92
 
 meta::section('commits-and-the-index', <<'__5af15311f1c1ac1c4539b0a835a11031');
 - s1 Commits and the Index | sec:commits-and-the-index
