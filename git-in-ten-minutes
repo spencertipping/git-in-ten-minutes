@@ -379,7 +379,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.BLPA/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.XXZH/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -1470,6 +1470,68 @@ __5a7e0bd196996326e6278b6dc308371c
 
 meta::resource('header-refs', '\\newcommand{\\Ref}[2]{\\hyperref[#2]{#1 \\ref*{#2}}}');
 meta::resource('header-resource', '\\lstnewenvironment{resourcecode}{}{}');
+meta::section('branching', <<'__bbf99b724b2df6579dddb75fec2e6c1a');
+- s1 Branching | sec:branching
+  Let's suppose you've got a repo with a few commits on it, so that the history is entirely linear:
+
+  - verbatim << end
+    empty repo -> commit A -> commit B -> [master] commit C
+  - end
+
+  In this case, {\tt .git/refs/heads/master} contains the commit ID of commit C, and the commit log (stored in {\tt .git/logs/refs/heads/master}) contains three log entries.\footnote{This
+  commit log is really handy in case you lose a commit somewhere. You can pull the commit ID out of the log and copy it into {\tt .git/refs/heads/X}, restoring or moving a branch.} Let's
+  create a new branch:
+
+  - verbatim << end
+    $ git checkout -b other-branch
+    Switched to a new branch 'other-branch'
+    $
+  - end
+
+  The notation looks confusing; why are we running {\tt git checkout} to create a new history path? It actually makes some sense. The deal is that we're pulling the latest commit (the default
+  unless you specify one) into a branch called {\tt other-branch}. (A shorthand for this command is {\tt git branch other-branch}.) This does a few things:
+
+  - enumerate << end
+    - item Copies {\tt .git/refs/heads/master} into {\tt .git/refs/heads/other-branch} -- now {\tt master} and {\tt other-branch} point to the same commit
+    - item Creates a log entry in the new file {\tt .git/logs/refs/heads/other-branch} indicating that we created the branch from {\tt HEAD}
+    - item Updates {\tt .git/HEAD} to indicate that we're following {\tt refs/heads/other-branch}
+           (the effect of this is that when you commit, {\tt refs/heads/other-branch} gets updated instead of {\tt refs/heads/master})
+  - end
+
+  You can also branch from a previous point in history using the same interface. To do that, you say \verb|git checkout -b <branch> <commit-id>|. This starts a branch at the specified commit
+  rather than branching off of the current {\tt HEAD}.
+
+  - s2 Tagging | sec:branching-tagging
+    A tag is just a human-friendly name for a commit. For example, you can say {\tt git tag foo} to make {\tt foo} a reference to the current {\tt HEAD}. Then later on you can refer to {\tt
+    foo} instead of the commit ID that it points to. {\tt git tag -l} lists all of the tags you've defined.
+
+  - s2 Rebasing | sec:branching-rebasing
+    You may have used {\tt git rebase} before. This command rewrites your commit history in a way that appears to be destructive. A common use case (and the only one that I'm familiar with) is
+    to squash a bunch of commits into a single one. So, for example, let's suppose we have this history:
+
+    - verbatim << end
+      empty repo -> commit A -> [tag:foo] commit B -> commit C -> [master] commit D
+    - end
+
+    You can run {\tt git rebase -i foo} from the {\tt master} branch, change all but the first line to begin with {\tt squash}, and now your history will look like this:
+
+    - verbatim << end
+      empty repo -> commit A -> [tag:foo] commit B -> [master] squashed commit of C and D
+    - end
+
+    What just happened? Git didn't really rewrite your history; rather, it created a new history for you and moved {\tt master} to it. The actual commit map now has a fork in it:
+
+    - verbatim << end
+      empty repo -> commit A -> [tag:foo] commit B -> [master] squashed commit of C and D
+                                                 \ 
+                                                   -> commit C -> commit D
+    - end
+
+    You can run \verb|git checkout <commit D's ID>| to get back to where you were before the rebase, and run \verb|git checkout master| to return.\footnote{This is one reason it's a good idea
+    to create a tag of {\tt HEAD} before rebasing, and why you shouldn't rebase over commits that you've pushed to other people.} Now before you go and assume that rebasing is safe, it isn't
+    exactly -- if you were to run a {\tt git gc} without either a branch or a tag on commit D, then commits C and D would get deleted.
+__bbf99b724b2df6579dddb75fec2e6c1a
+
 meta::section('commits-and-the-index', <<'__5af15311f1c1ac1c4539b0a835a11031');
 - s1 Commits and the Index | sec:commits-and-the-index
   Git has two things that you use to build history (which means branches, tags, etc). One is the index, where you can incrementally construct a commit that you're going to make; and the other
@@ -1609,7 +1671,7 @@ meta::section('leveraging-the-index', <<'__b873d6a71afde924b78e0ff4a52248fe');
   
 __b873d6a71afde924b78e0ff4a52248fe
 
-meta::section('main', <<'__505dbdc61e1b533a22ad4f925827a84b');
+meta::section('main', <<'__5b050b4c588c2ac917b98cb6888f1c13');
 - documentclass article
 - include resource::header
 
@@ -1622,8 +1684,91 @@ meta::section('main', <<'__505dbdc61e1b533a22ad4f925827a84b');
 
   - include section::introduction
   - include section::commits-and-the-index
+  - include section::branching
+  - include section::remotes
 - end
-__505dbdc61e1b533a22ad4f925827a84b
+__5b050b4c588c2ac917b98cb6888f1c13
+
+meta::section('remotes', <<'__6eae63ead397482532ab6c5acb0985a6');
+- s1 Remotes | sec:remotes
+  Before I talk about this, I want to clear up a common point of confusion. The word {\tt origin}, which appears frequently when discussing remotes, is very much like the word {\tt master} --
+  it is the default name for your remote, but it is by no means special to Git, nor is it any kind of Git terminology. This had me confused for a very long time before I managed to figure out
+  how this stuff worked.
+
+  Anyway, here's the deal with remotes. Git lets you define shorthands to remote repositories, whether they're accessed over SSH, HTTP, or are on the local filesystem.\footnote{Each of these
+  has a protocol wrapper to make sure things get transferred correctly, but ultimately it treats the push and pull operations the same regardless of how you're connecting to a repo.} Let's
+  talk about what {\tt git push} and {\tt git pull} do, and then I'll go into how to make it easy with remotes and tracking.
+
+  - s2 {\tt git push} | sec:git-push
+    {\tt git push} copies commits and branches from your repo to someone else's. The syntax is unintuitive but workable. Here are some examples:\footnote{You probably won't end up using these
+    examples for most things. I'm just going over the low-level stuff to illustrate how these commands work.}
+
+    - itemize << end
+      - item \verb|git push /path/to/a/repo master:master|
+
+             Merge our {\tt master} branch into another local repo. {\tt master:master} specifies that we're pushing from our {\tt master} branch (the first {\tt master}) into the repo's {\tt
+             master} branch (the second one). Note that this will probably complain, because it's likely that the destination repo has a checked-out working directory. Git tries to avoid the
+             case where the working directory mysteriously becomes out-of-sync with the {\tt HEAD} commit because other people are pushing to your branch.
+
+      - item \verb|git push . commit-id:refs/heads/branch-name|
+
+             Create a new branch from an old commit, all on this repo. This is exactly the same as \verb|git checkout -b branch-name commit-id|, except that the new branch won't be checked
+             out. We need the \verb|refs/heads/| on the beginning of the remote branch to indicate that we're trying to create a new branch, not mistakenly referring to a nonexistent branch.
+
+      - item \verb|git push username@host:path/to/repo master:master|
+
+             Merge our {\tt master} branch into someone else's repo over SSH. This works just like the first example; the only difference is that the remote repo is accessed via SSH rather
+             than through the filesystem.
+    - end
+
+    In each of these cases, the first argument to {\tt git push} is called a {\em remote}. Generally you don't actually specify a remote when you push; you configure the remote for each branch
+    and let Git fill it in. \Ref{Section}{sec:adding-a-remote} describes how this works.
+
+  - s2 Adding a remote | sec:adding-a-remote
+    Git has an interface for dealing with the very common case that you've got two repos and will sometimes synchronize changes between them. The easiest way to get this set up is to use {\tt
+    git clone} from one to another, but that covers up what's actually going on. Let's use the very common Github configuration as an example for how to configure a remote.
+
+    When you create a repo on Github, it contains instructions for setting up your local repo to push to it. They advise that you do the following:
+
+    - verbatim << end
+      $ git remote add origin git@github.com:yourname/reponame.git
+      $ git push origin master
+    - end
+
+    The first command just establishes an alias for the remote {\tt git@github.com:yourname/reponame.git} so that you don't have to type it out each time. The following {\tt git push} says to
+    push our {\tt master} branch into this remote. (Notice that we didn't specify a destination branch; Git's default is to use the same branch on both ends.) I like to add a couple of
+    configuration options to the local repo to make {\tt git push} and {\tt git pull} easier:
+
+    - verbatim << end
+      $ git config branch.master.remote origin
+      $ git config branch.master.merge refs/heads/master
+    - end
+
+    These are the two parameters that we were specifying earlier. Basically, {\tt branch.master.remote} is the remote to use by default when using {\tt git push}.\footnote{Notice that it's a
+    per-branch thing; this is useful sometimes, especially when you want to create a local fork that stays in sync with your local {\tt master} or some such. Then {\tt git push} and {\tt git
+    pull} can use your local repo, called ``{\tt .}'', as the remote. See \Ref{section}{sec:using-your-local-repo-as-a-remote} for more about this.} {\tt branch.master.merge} specifies the
+    remote branch that the local {\tt master} corresponds to. Once you have these options in place, you can just run {\tt git push} and {\tt git pull} without specifying either the remote or
+    the branch and Git will do the right thing.
+
+  - s2 Using your local repo as a remote | sec:using-your-local-repo-as-a-remote
+    This sounds weird, but it's actually really handy sometimes. Let's suppose you're working on a project hosted on Github, and you want to fork the project in a fairly major way without
+    subjecting your work-in-progress to the scrutiny of your extensive Github fan base. At the same time, though, you want to keep your fork up-to-date with any fixes you make on {\tt master}.
+    The easiest way to do all of this is to create a local branch whose remote is your local repo, and that merges into your {\tt master} branch:
+
+    - verbatim << end
+      $ git checkout -b my-fork
+      Switched to a new branch 'my-fork'
+      $ git config branch.my-fork.remote .
+      $ git config branch.my-fork.merge refs/heads/master
+      $ git pull        # merges from local master
+      $ git push        # merges into local master
+    - end
+
+    As you're making small fixes on {\tt master} you can merge them into {\tt my-fork} by running {\tt git pull} from {\tt my-fork}. When you've got {\tt my-fork} working properly, you can
+    {\tt git push} to merge back into {\tt master}. Then you can checkout {\tt master} and {\tt git push} to push all of those changes to Github.\footnote{If you're going to be doing much of
+    this type of thing, it's really helpful to have a shell prompt that shows you which branch you're on. I've merged into {\tt master} by accident more than once by forgetting that I had left
+    the repository on my fork branch.}
+__6eae63ead397482532ab6c5acb0985a6
 
 meta::template('comment', '\'\';     # A mechanism for line or block comments.');
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
