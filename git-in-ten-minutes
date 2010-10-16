@@ -201,7 +201,7 @@ meta::functor::editable 'configuration', inherit => 0, extension => '.conf', def
 };
 __d67e10a128e6b1d958c5b9d3bbe25aa4
 
-meta::meta('type::data', "meta::functor::editable 'data', extension => '', inherit => 0, default => 'cat';");
+meta::meta('type::data', 'meta::functor::editable \'data\', extension => \'\', inherit => 0, default => \'cat\';');
 meta::meta('type::function', <<'__d93b3cc15693707dac518e3d6b1f5648');
 meta::configure 'function', extension => '.pl', inherit => 1;
 meta::define_form 'function', sub {
@@ -266,14 +266,14 @@ meta::meta('type::meta', <<'__640f25635ce2365b0648962918cf9932');
 meta::configure 'meta', extension => '.pl', inherit => 1;
 __640f25635ce2365b0648962918cf9932
 
-meta::meta('type::note', "meta::functor::editable 'note', extension => '', inherit => 0, default => 'edit';");
+meta::meta('type::note', 'meta::functor::editable \'note\', extension => \'\', inherit => 0, default => \'edit\';');
 meta::meta('type::parent', <<'__607e9931309b1b595424bedcee5dfa45');
 meta::define_form 'parent', \&meta::bootstrap::implementation;
 meta::configure 'parent', extension => '', inherit => 1;
 __607e9931309b1b595424bedcee5dfa45
 
-meta::meta('type::resource', "meta::functor::editable 'resource', extension => '.cltex', inherit => 1, default => 'edit';");
-meta::meta('type::section', "meta::functor::editable 'section', extension => '.cltex', inherit => 0, default => 'edit';");
+meta::meta('type::resource', 'meta::functor::editable \'resource\', extension => \'.cltex\', inherit => 1, default => \'edit\';');
+meta::meta('type::section', 'meta::functor::editable \'section\', extension => \'.cltex\', inherit => 0, default => \'edit\';');
 meta::meta('type::state', <<'__c1f29670be26f1df6100ffe4334e1202');
 # Allows temporary or long-term storage of states. Nothing particularly insightful
 # is done about compression, so storing alternative states will cause a large
@@ -294,8 +294,8 @@ meta::define_form 'template', sub {
 };
 __25f4d6eafb1d3eea6d5d3d9a71a5623e
 
-meta::meta('type::vim_highlighter', "meta::functor::editable 'vim_highlighter', extension => '.vim', inherit => 1, default => 'edit';");
-meta::meta('type::watch', "meta::functor::editable 'watch', prefix => 'watch::', inherit => 1, extension => '.pl', default => 'cat';");
+meta::meta('type::vim_highlighter', 'meta::functor::editable \'vim_highlighter\', extension => \'.vim\', inherit => 1, default => \'edit\';');
+meta::meta('type::watch', 'meta::functor::editable \'watch\', prefix => \'watch::\', inherit => 1, extension => \'.pl\', default => \'cat\';');
 meta::bootstrap('initialization', <<'__baa43e5e8e6e1cd76d4e2de828ceaa4d');
 #!/usr/bin/perl
 
@@ -379,7 +379,7 @@ __3c6177256de0fddb721f534c3ad8c0ee
 
 meta::data('name', 'git-in-ten-minutes');
 meta::data('output-dir', '/tmp/');
-meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.wJzG/document.pdf');
+meta::data('pdf-output-file', '/tmp//git-in-ten-minutes.BLPA/document.pdf');
 meta::data('pdf-reader', '/usr/bin/evince');
 meta::data('pdftex-command', 'pdflatex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('quiet', '1');
@@ -387,7 +387,7 @@ meta::data('source-directory', '.');
 meta::data('table-of-contents', '1');
 meta::data('tex-command', 'latex -output-directory=__TEMPORARY_DIRECTORY__ __INPUT_FILE__');
 meta::data('watching', '0');
-meta::function('cat', 'join "\n", retrieve(@_);');
+meta::function('cat', 'join "\\n", retrieve(@_);');
 meta::function('child', <<'__3eeb4b4fd37a502b53f0008e7835b5de');
 my ($child_name) = @_;
 
@@ -599,10 +599,7 @@ join "\n", map strip($_), split /\n/, table_display($all ? [@definitions] : [gre
                                                     $sizes ? ([@sizes]) : (), $flags ? ([@flags]) : ());
 __ffe7609f16d647b7eb9ed9693dd12c23
 
-meta::function('ls-a', <<'__87c7c2aabf4dee78f646c5542608af56');
-ls('-ad', @_);
-__87c7c2aabf4dee78f646c5542608af56
-
+meta::function('ls-a', 'ls(\'-ad\', @_);');
 meta::function('make', <<'__9a3d7e3c7e0017f4c9b239f3858aaf03');
 compile() || view();
 clean();
@@ -624,7 +621,7 @@ meta::function('note', <<'__bcbfeac6dd2112f47296265444570a6e');
 create("note::$_[0]");
 __bcbfeac6dd2112f47296265444570a6e
 
-meta::function('parents', 'join "\n", grep s/^parent:://o, sort keys %data;');
+meta::function('parents', 'join "\\n", grep s/^parent:://o, sort keys %data;');
 meta::function('perl', <<'__f2b57dd342923797e8e2287c3095803f');
 my $result = eval(join ' ', @_);
 $@ ? terminal::message('error', $@) : $result;
@@ -727,31 +724,38 @@ my @final_array          = @{$partial ? \@attributes : [retrieve('bootstrap::ini
 join "\n", @final_array;
 __023436ac07471e2f2cf016e2172c8d73
 
-meta::function('serialize_single', <<'__6292f0374819c770ce00608252aa4506');
+meta::function('serialize_single', <<'__48005281edde632b0df2e346c094b7bd');
 # Serializes a single attribute and optimizes for content.
 
 my $name               = $_[0] || $_;
 my $contents           = $data{$name};
 my $meta_function_name = 'meta::' . namespace($name);
 my $invocation_name    = attribute($name);
+my $escaped            = $contents;
+$escaped =~ s/\\/\\\\/go;
+$escaped =~ s/'/\\'/go;
 
-return "$meta_function_name('$invocation_name', '$contents');"   if $contents =~ /^[^\n']*$/;
-return "$meta_function_name('$invocation_name', \"$contents\");" if $contents =~ /^[^\n"\\\$@%&]*$/;
+return "$meta_function_name('$invocation_name', '$escaped');" unless $escaped =~ /\v/;
 
 my $delimiter = '__' . fast_hash($contents);
 return "$meta_function_name('$invocation_name', <<'$delimiter');\n$contents\n$delimiter\n";
-__6292f0374819c770ce00608252aa4506
+__48005281edde632b0df2e346c094b7bd
 
-meta::function('shell', <<'__c6ef6c31734c0b330f6076543fef8f1f');
+meta::function('shell', <<'__e9e0709e6ee1dd09521c683322be79e6');
 use Term::ReadLine;
 
 my $term = new Term::ReadLine "$0 shell";
 $term->ornaments(0);
-my $prompt = name() . '$ ';
+my $prompt = undef;
+my $set_prompt = sub {
+  $prompt = "\033[1;32m" . name() . "\033[0;0m ";
+};
+  
 my $output = $term->OUT || \*STDOUT;
 
 $term->Attribs->{attempted_completion_function} = \&complete;
 
+&$set_prompt();
 while (defined ($_ = $term->readline($prompt))) {
   my $command_line = $_;
   my @args = grep length, split /\s+|("[^"\\]*(?:\\.)?")/o;
@@ -778,9 +782,9 @@ while (defined ($_ = $term->readline($prompt))) {
     }
   }
 
-  $prompt = name() . '$ ';
+  &$set_prompt();
 }
-__c6ef6c31734c0b330f6076543fef8f1f
+__e9e0709e6ee1dd09521c683322be79e6
 
 meta::function('size', 'length(serialize());');
 meta::function('snapshot', <<'__787158a5844d36cbfd29e5b74c9167e1');
@@ -806,10 +810,7 @@ preprocess(retrieve("section::$document"));
 __5bb8bf491e1b442858096acf711135f9
 
 meta::function('unlock', 'chmod_self(sub {$_[0] | 0200});');
-meta::function('update', <<'__4de1a6a4085836590a3b1ef997f9d5ea');
-&{'update-from'}(@_, grep s/^parent:://o, sort keys %data);
-__4de1a6a4085836590a3b1ef997f9d5ea
-
+meta::function('update', '&{\'update-from\'}(@_, grep s/^parent:://o, sort keys %data);');
 meta::function('update-from', <<'__f927cc6b2e1c93ce2e969845e01ba839');
 # Upgrade all attributes that aren't customized. Customization is defined when the data type is created,
 # and we determine it here by checking for $transients{inherit}{$type}.
@@ -1145,7 +1146,7 @@ my %options;
 ({%options}, @others, @_);
 __d47e8ee23fe55e27bb523c9fcb2f5ca1
 
-meta::internal_function('strip', 'wantarray ? map {s/^\s*|\s*$//g; $_} @_ : $_[0] =~ /^\s*(.*?)\s*$/ && $1;');
+meta::internal_function('strip', 'wantarray ? map {s/^\\s*|\\s*$//g; $_} @_ : $_[0] =~ /^\\s*(.*?)\\s*$/ && $1;');
 meta::internal_function('table_display', <<'__8a6897e093f36bf05477a3889b84a61d');
 # Displays an array of arrays as a table; that is, with alignment. Arrays are
 # expected to be in column-major order.
@@ -1467,8 +1468,93 @@ meta::resource('header-packages', <<'__5a7e0bd196996326e6278b6dc308371c');
 \usepackage[colorlinks]{hyperref}
 __5a7e0bd196996326e6278b6dc308371c
 
-meta::resource('header-refs', '\newcommand{\Ref}[2]{\hyperref[#2]{#1 \ref*{#2}}}');
-meta::resource('header-resource', '\lstnewenvironment{resourcecode}{}{}');
+meta::resource('header-refs', '\\newcommand{\\Ref}[2]{\\hyperref[#2]{#1 \\ref*{#2}}}');
+meta::resource('header-resource', '\\lstnewenvironment{resourcecode}{}{}');
+meta::section('commits-and-the-index', <<'__5af15311f1c1ac1c4539b0a835a11031');
+- s1 Commits and the Index | sec:commits-and-the-index
+  Git has two things that you use to build history (which means branches, tags, etc). One is the index, where you can incrementally construct a commit that you're going to make; and the other
+  is a commit. Let's talk about commits.
+
+  - s2 Commits | sec:commits
+    Git doesn't care about branches, tags, or labels like {\tt HEAD}. At the end of the day, all that exist are commits, and each commit has a name like {\tt 08c183fa68d1.....787f}. The name
+    of a commit is derived from its contents via some hash function (SHA-1, I believe), and the contents of a commit consist of:
+
+    - enumerate << end
+      - item The parent commit ID(s) (there are multiple if you're merging)
+      - item Changes to files
+      - item The commit message and other commit metadata
+    - end
+
+    So suppose you create an empty repository, add a file, and commit it:
+
+    - verbatim << end
+      $ mkdir tmp && cd tmp
+      $ git init
+      Initialized empty Git repository in /home/spencertipping/tmp/.git/
+      $ echo test > foo
+      $ git add foo
+      $ git commit -m "Added a new file called 'foo'"
+      [master (root-commit) a8c7d33] Added a file called 'foo'
+       1 files changed, 1 insertions(+), 0 deletions(-)
+        create mode 100644 foo
+      $ cat .git/refs/heads/master
+      a8c7d33649e32471493cebdaa1246a9281be2622
+      $
+    - end
+
+    At this point you'll have a single commit in your repo and the branch {\tt master} will point to that commit. Just for fun, we can temporarily bork our repo:
+
+    - verbatim << end
+      $ cp .git/refs/heads/master old-master
+      $ echo 'foo' > .git/refs/heads/master
+      $ git log
+      fatal: bad default revision 'HEAD'
+      $
+    - end
+
+    Git complains about this because we've changed the commit that {\tt master} points to. Git changes {\tt refs/heads/master} all the time, but each of those changes points it to a valid
+    commit ID, not a string like {\tt foo}. To get our repo back in working order, just \verb|mv old-master .git/refs/heads/master|.
+
+    OK, so why go to the trouble to break our repo? Perhaps surprisingly, that wasn't just because I like to live dangerously. The point of that exercise is to illustrate that commits are a
+    fundamental idea and branches exist purely on the surface. Branches, tags, etc.~are all {\em pointers} into the immutable, shared tree of commits. Important things to know about this:
+
+    - enumerate << end
+      - item Each commit is immutable (rebasing and using {\tt --amend} and such create new commits, but don't modify existing ones)
+      - item Because of this, separate branches can share commits (which is why Git's branching is so fast)
+      - item The only time Git removes commit objects are when:
+        - enumerate << end
+          - item No tags or branches refer to them (we had this going on after we borked the repo), and
+          - item A {\tt git gc} is run
+        - end
+    - end
+
+  - s2 The Index | sec:the-index
+    It's hard to say whether the index is a feature or a problem. It could probably be done better,\footnote{It certainly could have a more meaningful name.} but it's still useful the way it
+    is. Basically, the index is what Git thinks the world (i.e.~your working directory) should look like. You can modify the index with these commands (among others):
+
+    - enumerate << end
+      - item {\tt git add} --- copies a file from the working directory into the index.
+             (Used with {\tt -p}, you can copy pieces of a file into the index, which can be useful when you're debugging stuff)
+      - item {\tt git reset} --- copies a file from some commit into the index without updating the working directory.
+             (Used with {\tt --hard}, it also copies that file into the working directory, which can be useful for clobbering changes)
+      - item {\tt git commit -a} --- copies all tracked files into the index and commits.
+      - item {\tt git checkout} --- copies a commit into both the index and the working directory.
+    - end
+
+    It's important to realize that {\tt git diff} with no arguments always compares your working directory to the index, not to the most recent commit.\footnote{This is why once you've {\tt
+    git add}ed something you won't see a diff for it anymore.} Also, {\tt git commit} always commits from the index (though some variants, such as {\tt -a} or when given a filename, update the
+    index from the working directory before committing).
+__5af15311f1c1ac1c4539b0a835a11031
+
+meta::section('introduction', <<'__a38e04ba20fa7c8d85765ba696f2a828');
+- s1 Introduction | sec:introduction
+  Git is a widely misunderstood and therefore oft-maligned tool. It does have some major flaws, but I believe most of the negative feelings towards Git arise because people don't understand
+  how it works. This guide is similar in purpose to ``JavaScript in Ten Minutes'' -- the idea is to explain the confusing parts of Git for anyone familiar with some of its basic use cases.
+
+  A disclaimer: I don't know Git as well as I know JavaScript. There are lots of longer guides online written by people with more knowledge of Git than I have, so if there are discrepancies
+  between this guide and someone else's, chances are they're right.
+__a38e04ba20fa7c8d85765ba696f2a828
+
 meta::section('leveraging-the-index', <<'__b873d6a71afde924b78e0ff4a52248fe');
 - s1 Leveraging the Index | sec:leveraging-the-index
   Git's index is a feature, not a bug. It's one of Git's best features because it gives you both sub-commit checkpointing and very fine-grained control over commits. For example, let's suppose
@@ -1523,7 +1609,7 @@ meta::section('leveraging-the-index', <<'__b873d6a71afde924b78e0ff4a52248fe');
   
 __b873d6a71afde924b78e0ff4a52248fe
 
-meta::section('main', <<'__187553c4e274161c21e60cd789d7db7d');
+meta::section('main', <<'__505dbdc61e1b533a22ad4f925827a84b');
 - documentclass article
 - include resource::header
 
@@ -1534,11 +1620,12 @@ meta::section('main', <<'__187553c4e274161c21e60cd789d7db7d');
   - maketitle
   - tableofcontents
 
-  - include section::leveraging-the-index
+  - include section::introduction
+  - include section::commits-and-the-index
 - end
-__187553c4e274161c21e60cd789d7db7d
+__505dbdc61e1b533a22ad4f925827a84b
 
-meta::template('comment', "'';     # A mechanism for line or block comments.");
+meta::template('comment', '\'\';     # A mechanism for line or block comments.');
 meta::template('eval', <<'__7be1d470a07a06c58e971bc7fc24c048');
 my $result = eval $_[0];
 terminal::message('warning', "Error during template evaluation: $@") if $@;
@@ -1558,7 +1645,7 @@ return '' if template::failing_conditional($commands);
 join "\n", map retrieve($_), split /\s+/, $commands;
 __e0624844a65ae41e0217dd871fc0dbfb
 
-meta::template('item[]', '"\item[$_[0]]";');
+meta::template('item[]', '"\\\\item[$_[0]]";');
 meta::vim_highlighter('cltex', <<'__5bfc80e1a2ad3bb7cb4f57ff906d71b0');
 " Cleaner TeX
 " Maintainer: Spencer Tipping <spencer@spencertipping.com>
